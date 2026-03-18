@@ -18,3 +18,5 @@
 /luarocks-admin
 /.luarocks
 /.luacheckcache
+/luarocks.bat
+/lua.bat
