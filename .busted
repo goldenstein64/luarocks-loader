@@ -1,5 +1,6 @@
 return {
-    _all = {
-        output = "plainTerminal",
-    },
+	_all = {
+		output = "plainTerminal",
+		helper = "build-teal.lua",
+	},
 }
