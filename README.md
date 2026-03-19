@@ -1,16 +1,10 @@
 # luarocks-loader
 
-A package manager for Lua modules.
+A package loader for Lua modules.
 
-[![Build Status](https://github.com/luarocks/luarocks/actions/workflows/test.yml/badge.svg)](https://github.com/luarocks/luarocks/actions)
-[![Coverage Status](https://codecov.io/gh/luarocks/luarocks/branch/main/graph/badge.svg)](https://app.codecov.io/gh/luarocks/luarocks/tree/main)
-[![Join the chat at https://gitter.im/luarocks/luarocks](https://badges.gitter.im/luarocks/luarocks.svg)](https://gitter.im/luarocks/luarocks)
+See [luarocks/luarocks-loader](https://github.com/luarocks/luarocks-loader) for what this is supposed to do.
 
-Main website: [luarocks.org](https://luarocks.org)
-
-It allows you to install Lua modules as self-contained packages called
-*rocks*. LuaRocks supports both local and remote repositories, and
-multiple local rocks trees.
+This was created despite the previously mentioned project's existence because I can't build it on Windows. `luarocks-build-cyan` does not work there because `cyan.bat` is not picked up as a tool by `require("luarocks.fs").is_tool_available("cyan")`. I should probably just file this as an issue on their side instead, but I already did all this work, so I might as well publish it.
 
 ## License
 
