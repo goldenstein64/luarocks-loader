@@ -17,7 +17,7 @@ local function mode(name)
 end
 
 local function ensure_dir(name)
-   local cd = lfs.currentdir()
+   local cd = assert(lfs.currentdir())
    for dir in name:gmatch("(.-)%/") do
       if mode(dir) ~= "directory" then
          assert(lfs.mkdir(dir))
@@ -269,7 +269,7 @@ describe("luarocks.loader", function()
 
          -- `require('rock_a')` asserts that it loads the correct version of rock_b
          local test_script = {
-            "package.path = package.path .. ';../src/?.lua'",
+            "package.path = package.path .. ';../src/?.lua;../lua_modules/share/lua/5.4/?.lua'",
             "local cfg = require('luarocks.core.cfg')",
             "local loader = require('luarocks.loader')",
             "cfg.init({ project_dir = '" .. cd .. "' })",
