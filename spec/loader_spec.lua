@@ -1,3 +1,13 @@
+--[[
+   this uses the following command-line tools:
+   - luarocks
+   - lua54
+   - 7z
+
+   this also requires the `tl` rock to be installed for one of the unit tests;
+   it's needed to build the .tl files anyway.
+]]
+
 local lfs = require("lfs")
 
 assert(_VERSION == "Lua 5.4")
@@ -94,8 +104,16 @@ local function cmds_to_string(cmds)
 end
 
 ---@param cmds string[]
-local function run_cmds(cmds)
-   print(cmds_to_string(cmds))
+---@param print_cmds? boolean
+local function run_cmds(cmds, print_cmds)
+   if print_cmds then
+      print(cmds_to_string(cmds))
+   else
+      for i, c in ipairs(cmds) do
+         cmds[i] = c .. " > NUL"
+      end
+   end
+
    local ok, err, status = os.execute(table.concat(cmds, " && "))
    if not ok then
       error(err .. " " .. tostring(status), 2)
@@ -139,100 +157,132 @@ end
 local make_manifest_cmd = cmd({ "luarocks-admin", "make-manifest", rpathd({ "server" }) })
 
 describe("luarocks.loader", function()
-   lazy_setup(function()
-      assert(lfs.chdir("spec"))
+   describe("#unit", function()
+      it("starts", function()
+         local test_script = {
+            "package.path = package.path .. ';./src/?.lua'",
+            "require('luarocks.loader')",
+            "print(package.loaded['luarocks.loader'])",
+         }
+
+         run_cmds({
+            cmd({ "lua54", opt("e", quote(table.concat(test_script, "; "))) }),
+         })
+      end)
+
+      describe("which", function()
+         it("finds modules using package.path", function()
+            local test_script = {
+               "package.path = package.path .. ';./src/?.lua'",
+               "local loader = require('luarocks.loader')",
+               "local x, y, z, p = loader.which('tl', 'p')",
+               "assert(p == 'p')",
+            }
+
+            run_cmds({
+               cmd({ "lua54", opt("e", quote(table.concat(test_script, "; "))) }),
+            })
+         end)
+      end)
    end)
 
-   lazy_teardown(function()
-      assert(lfs.chdir(".."))
-   end)
+   describe("#integration", function()
+      lazy_setup(function()
+         assert(lfs.chdir("spec"))
+      end)
 
-   it("respects version constraints", function()
-      local cd = lfs.currentdir():gsub("\\", "/")
+      lazy_teardown(function()
+         assert(lfs.chdir(".."))
+      end)
 
-      ensure_dir(pathd({ "server" }))
+      it("respects version constraints", function()
+         local cd = lfs.currentdir():gsub("\\", "/")
 
-      write_file("projects/rock_b/0.1-1/rock_b/rock_b.lua", "return { version = '0.1' }")
-      write_file("projects/rock_b/0.1-1/rock_b/rock_b-0.1-1.rockspec", [[
-        rockspec_format = "3.0"
-        package = "rock_b"
-        version = "0.1-1"
-        source = {
-            url = "file://]] .. cd .. [[/projects/rock_b/0.1-1/rock_b-0.1-1.zip",
-        }
-        build = {
-            type = "builtin",
-            modules = {
-                ["rock_b"] = "rock_b.lua",
-            },
-        }
-      ]])
+         ensure_dir(pathd({ "server" }))
 
-      run_cmds(add_rock_to_server_cmds("rock_b", "0.1-1"))
+         write_file("projects/rock_b/0.1-1/rock_b/rock_b.lua", "return { version = '0.1' }")
+         write_file("projects/rock_b/0.1-1/rock_b/rock_b-0.1-1.rockspec", [[
+           rockspec_format = "3.0"
+           package = "rock_b"
+           version = "0.1-1"
+           source = {
+               url = "file://]] .. cd .. [[/projects/rock_b/0.1-1/rock_b-0.1-1.zip",
+           }
+           build = {
+               type = "builtin",
+               modules = {
+                   ["rock_b"] = "rock_b.lua",
+               },
+           }
+         ]])
 
-      write_file("projects/rock_b/1.0-1/rock_b/rock_b.lua", "return { version = '1.0' }")
-      write_file("projects/rock_b/1.0-1/rock_b/rock_b-1.0-1.rockspec", [[
-        rockspec_format = "3.0"
-        package = "rock_b"
-        version = "1.0-1"
-        source = {
-            url = "file://]] .. cd .. [[/projects/rock_b/1.0-1/rock_b-1.0-1.zip"
-        }
-        build = {
-            type = "builtin",
-            modules = {
-                rock_b = "rock_b.lua"
-            }
-        }
-      ]])
+         run_cmds(add_rock_to_server_cmds("rock_b", "0.1-1"))
 
-      run_cmds(add_rock_to_server_cmds("rock_b", "1.0-1"))
+         write_file("projects/rock_b/1.0-1/rock_b/rock_b.lua", "return { version = '1.0' }")
+         write_file("projects/rock_b/1.0-1/rock_b/rock_b-1.0-1.rockspec", [[
+           rockspec_format = "3.0"
+           package = "rock_b"
+           version = "1.0-1"
+           source = {
+               url = "file://]] .. cd .. [[/projects/rock_b/1.0-1/rock_b-1.0-1.zip"
+           }
+           build = {
+               type = "builtin",
+               modules = {
+                   rock_b = "rock_b.lua"
+               }
+           }
+         ]])
 
-      write_file(
-         "projects/rock_a/2.0-1/rock_a/rock_a.lua",
-         "rock_b = require('rock_b'); assert(rock_b.version == '0.1')"
-      )
-      write_file("projects/rock_a/2.0-1/rock_a/rock_a-2.0-1.rockspec", [[
-        rockspec_format = "3.0"
-        package = "rock_a"
-        version = "2.0-1"
-        source = {
-            url = "file://]] .. cd .. [[/projects/rock_a/2.0-1/rock_a-2.0-1.zip"
-        }
-        dependencies = {
-            "rock_b < 1.0",
-        }
-        build = {
-            type = "builtin",
-            modules = {
-                rock_a = "rock_a.lua"
-            }
-        }
-      ]])
+         run_cmds(add_rock_to_server_cmds("rock_b", "1.0-1"))
 
-      run_cmds(add_rock_to_server_cmds("rock_a", "2.0-1"))
+         write_file(
+            "projects/rock_a/2.0-1/rock_a/rock_a.lua",
+            "rock_b = require('rock_b'); assert(rock_b.version == '0.1')"
+         )
+         write_file("projects/rock_a/2.0-1/rock_a/rock_a-2.0-1.rockspec", [[
+           rockspec_format = "3.0"
+           package = "rock_a"
+           version = "2.0-1"
+           source = {
+               url = "file://]] .. cd .. [[/projects/rock_a/2.0-1/rock_a-2.0-1.zip"
+           }
+           dependencies = {
+               "rock_b < 1.0",
+           }
+           build = {
+               type = "builtin",
+               modules = {
+                   rock_a = "rock_a.lua"
+               }
+           }
+         ]])
 
-      run_cmds({
-         make_manifest_cmd,
-         install_rock_cmd("rock_b", "0.1"),
-         install_rock_cmd("rock_b", "1.0"),
-         install_rock_cmd("rock_a", "2.0"),
-      })
+         run_cmds(add_rock_to_server_cmds("rock_a", "2.0-1"))
 
-      -- `require('rock_a')` asserts that it loads the correct version of rock_b
-      local test_script = {
-         "package.path = package.path .. ';../src/?.lua'",
-         "local cfg = require('luarocks.core.cfg')",
-         "local loader = require('luarocks.loader')",
-         "table.insert(cfg.rocks_trees, 1, { name = 'project', root = '" .. cd .. "/lua_modules' })",
-         "require('rock_a')",
-      }
+         run_cmds({
+            make_manifest_cmd,
+            install_rock_cmd("rock_b", "0.1"),
+            install_rock_cmd("rock_b", "1.0"),
+            install_rock_cmd("rock_a", "2.0"),
+         })
 
-      run_cmds({
-         cmd({
-            "lua54",
-            opt("e", quote(table.concat(test_script, "; "))),
-         }),
-      })
+         -- `require('rock_a')` asserts that it loads the correct version of rock_b
+         local test_script = {
+            "package.path = package.path .. ';../src/?.lua'",
+            "local cfg = require('luarocks.core.cfg')",
+            "local loader = require('luarocks.loader')",
+            "cfg.init({ project_dir = '" .. cd .. "' })",
+            "table.insert(cfg.rocks_trees, 1, { name = 'project', root = '" .. cd .. "/lua_modules'})",
+            "require('rock_a')",
+         }
+
+         run_cmds({
+            cmd({
+               "lua54",
+               opt("e", quote(table.concat(test_script, "; "))),
+            }),
+         })
+      end)
    end)
 end)
