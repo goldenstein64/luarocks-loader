@@ -1,0 +1,4 @@
+projects/
+server/
+lua_modules/
+.luarocks/

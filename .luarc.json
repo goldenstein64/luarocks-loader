@@ -1,0 +1,10 @@
+{
+    "workspace": {
+        "library": [
+            "${addons}/penlight/module/library",
+            "${addons}/luafilesystem/module/library",
+            "${addons}/busted/module/library",
+            "${addons}/luassert/module/library"
+        ]
+    }
+}
