@@ -1,4 +1,7 @@
-ls -recurse "src/**/*.tl" `
-    | ? { -not $_.Name.EndsWith(".d.tl") } `
-    | % { $_.FullName } `
-    | % { cyan gen $_ --output $_.Replace(".tl", ".lua") }
+
+$files = @(
+    Get-ChildItem -Recurse -Path "src/**/*.tl"
+        | Where-Object { -not $_.Name.EndsWith(".d.tl") }
+        | ForEach-Object { $_.FullName }
+)
+cyan gen @files
