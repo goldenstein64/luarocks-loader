@@ -119,7 +119,9 @@ local function run_cmds(cmds, print_cmds)
    if print_cmds then
       print(cmds_to_string(cmds))
    else
-      cmds[#cmds] = cmds[#cmds] .. " " .. redirect_null
+      for i, cmd in ipairs(cmds) do
+         cmds[i] = cmd .. " " .. redirect_null
+      end
    end
 
    local ok, err, status = os.execute(table.concat(cmds, " && "))
