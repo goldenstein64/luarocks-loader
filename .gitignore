@@ -20,3 +20,4 @@
 /.luacheckcache
 /luarocks.bat
 /lua.bat
+/.env.local

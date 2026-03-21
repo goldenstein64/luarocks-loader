@@ -45,7 +45,7 @@ else
          "find",
          quote("$(pwd)/" .. location),
          "-type",
-         "f"
+         "f",
       })))
       return coroutine.wrap(function()
          local dir ---@type string

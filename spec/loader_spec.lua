@@ -1,19 +1,18 @@
 --[[
    this uses the following command-line tools:
    - luarocks
-   - lua54
+   - lua (can be modified by setting $LUA_NAME in env)
    - 7z
 
    this also requires the `tl` rock to be installed for one of the unit tests;
    it's needed to build the .tl files anyway.
 ]]
 
-assert(_VERSION == "Lua 5.4")
-
 local lfs = require("lfs")
 
 local redirect_null
 local copy_cmd
+local lua_name = os.getenv("LUA_NAME") or "lua"
 if package.config:sub(1, 1) == "\\" then
    redirect_null = " > NUL"
    copy_cmd = "copy"
@@ -176,7 +175,7 @@ describe("luarocks.loader", function()
          }
 
          run_cmds({
-            cmd({ "lua54", opt("e", quote(table.concat(test_script, "; "))) }),
+            cmd({ lua_name, opt("e", quote(table.concat(test_script, "; "))) }),
          })
       end)
 
@@ -190,7 +189,7 @@ describe("luarocks.loader", function()
             }
 
             run_cmds({
-               cmd({ "lua54", opt("e", quote(table.concat(test_script, "; "))) }),
+               cmd({ lua_name, opt("e", quote(table.concat(test_script, "; "))) }),
             })
          end)
       end)
@@ -281,7 +280,7 @@ describe("luarocks.loader", function()
 
          run_cmds({
             cmd({
-               "lua54",
+               lua_name,
                opt("e", quote(table.concat(test_script, "; "))),
             }),
          })
