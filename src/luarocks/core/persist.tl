@@ -94,7 +94,7 @@ function persist.load_json_into_table(filename: string) : {string: any}, {string
       return nil, "Failed decode manifest: " .. err, "load"
    end
 
-   return manifest, {}
+   return manifest as {string:any}, {}
 end
 
 return persist
