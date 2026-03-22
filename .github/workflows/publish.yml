@@ -17,7 +17,7 @@ jobs:
       - name: Get Rockspec Version
         run: |
           if [[ "${{ github.ref_name }}" =~ ^v(.+)$ ]]; then
-            echo "spec_version=${BASH_REMATCH[1]}-1" >> $GITHUB_ENV
+            echo "spec_version=${BASH_REMATCH[1]}" >> $GITHUB_ENV
           else
             echo "rockspec version could not be matched" >&2
             exit 1
@@ -37,17 +37,17 @@ jobs:
 
       - name: Write LuaRocks Rockspec
         run: |
-          luarocks new_version \
-            --tag ${{ github.ref_name }} \
-            ${{ env.package_name }}-release-1.rockspec
+          cat ${{ env.package_name }}-release-1.rockspec \
+            | sed s/\{RELEASE\}/${{ env.spec_version }}/ \
+            > ${{ env.package_name }}-${{ env.spec_version }}-1.rockspec
 
       - name: Publish to LuaRocks
         run: |
           luarocks upload \
-            "./${{ env.package_name }}-${{ env.spec_version }}.rockspec" \
+            "./${{ env.package_name }}-${{ env.spec_version }}-1.rockspec" \
             --api-key=${{ secrets.LUAROCKS_API_KEY }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "${{ env.package_name }}-${{ env.spec_version }}.src.rock"
+          files: "${{ env.package_name }}-${{ env.spec_version }}-1.src.rock"
