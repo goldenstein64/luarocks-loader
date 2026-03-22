@@ -1,0 +1,15 @@
+return {
+	include = {
+		"src%/.+$",
+		-- "spec%/.+$",
+	},
+	modules = {
+		["luarocks.loader"] = "src\\luarocks\\loader.lua",
+		["luarocks.build.lls-addon.*"] = "src",
+	},
+	reporter = "html",
+	runreport = true,
+	deletestats = true,
+	statsfile = "luacov.stats.out",
+	reportfile = "luacov.report.html",
+}
