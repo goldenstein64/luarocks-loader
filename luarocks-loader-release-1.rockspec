@@ -1,8 +1,8 @@
 rockspec_format = "3.0"
 package = "luarocks-loader"
-version = "release-1"
+version = "{RELEASE}-1"
 source = {
-   url = "git+https://github.com/goldenstein64/luarocks-loader",
+   url = "https://github.com/goldenstein64/luarocks-loader/archive/refs/tags/v{RELEASE}.zip",
 }
 description = {
    summary = "A LuaRocks loader derived from LuaRocks source",
