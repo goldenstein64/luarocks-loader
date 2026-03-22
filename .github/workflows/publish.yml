@@ -42,10 +42,10 @@ jobs:
             > ${{ env.package_name }}-${{ env.spec_version }}-1.rockspec
 
       - name: Publish to LuaRocks
-        run: |
-          luarocks upload \
+        run: |  # upload to my user manifest
+          luarocks --only-server=https://luarocks.org/manifests/goldenstein64 upload \
             "./${{ env.package_name }}-${{ env.spec_version }}-1.rockspec" \
-            --api-key=${{ secrets.LUAROCKS_API_KEY }}
+            --temp-key=${{ secrets.LUAROCKS_API_KEY }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
