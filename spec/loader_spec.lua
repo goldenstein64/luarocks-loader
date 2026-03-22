@@ -175,7 +175,7 @@ describe("luarocks.loader", function()
          }
 
          run_cmds({
-            cmd({ lua_name, opt("e", quote(table.concat(test_script, "; "))) }),
+            cmd({ lua_name, opt("l", "luacov"), opt("e", quote(table.concat(test_script, "; "))) }),
          })
       end)
 
@@ -187,9 +187,8 @@ describe("luarocks.loader", function()
                "local x, y, z, p = loader.which('tl', 'p')",
                "assert(p == 'p')",
             }
-
             run_cmds({
-               cmd({ lua_name, opt("e", quote(table.concat(test_script, "; "))) }),
+               cmd({ lua_name, opt("l", "luacov"), opt("e", quote(table.concat(test_script, "; "))) }),
             })
          end)
       end)
@@ -281,6 +280,7 @@ describe("luarocks.loader", function()
          run_cmds({
             cmd({
                lua_name,
+               opt("l", "luacov"),
                opt("e", quote(table.concat(test_script, "; "))),
             }),
          })
