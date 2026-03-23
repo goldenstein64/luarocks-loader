@@ -8,6 +8,10 @@ description = {
    summary = "A LuaRocks loader derived from LuaRocks source",
 }
 
+dependencies = {
+   "lua >= 5.1",
+}
+
 test_dependencies = {
    "tl ~> 0.24",
    "cyan ~> 0.4",
