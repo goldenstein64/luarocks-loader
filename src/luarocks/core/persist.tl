@@ -2,7 +2,7 @@
 local record persist
 end
 
-local json = require("dkjson")
+local json_ok, json = pcall(require, "dkjson")
 
 --------------------------------------------------------------------------------
 
@@ -69,6 +69,12 @@ function persist.load_into_table(filename: string, tbl?: {string:any}) : {string
    return result, globals
 end
 
+local enum ErrorCode
+   "open" -- couldn't open the file
+   "load" -- compile-time error
+   "run"  -- run-time error
+end
+
 --- Load a JSON file containing assignments, storing them in a table.
 -- The global environment is not propagated to the loaded file.
 -- @param filename string: the name of the file.
@@ -79,7 +85,7 @@ end
 -- or nil, an error message and an error code ("open"; couldn't open the file,
 -- "load"; compile-time error, or "run"; run-time error)
 -- in case of errors.
-function persist.load_json_into_table(filename: string) : {string: any}, {string: boolean} | string, string
+function persist.load_json_into_table(filename: string) : {string: any}, {string: boolean} | string, ErrorCode
    local fd, open_err = io.open(filename)
    if not fd then
       return nil, open_err, "open"
@@ -89,12 +95,15 @@ function persist.load_json_into_table(filename: string) : {string: any}, {string
    if not str then
       return nil, read_err, "open"
    end
+   if not json_ok then
+      return nil, json as string, "load"
+   end
    local manifest, _, err = json.decode(str)
    if not manifest then
       return nil, "Failed decode manifest: " .. err, "load"
    end
 
-   return manifest as {string:any}, {}
+   return manifest as {string:any}, {}, nil
 end
 
 return persist

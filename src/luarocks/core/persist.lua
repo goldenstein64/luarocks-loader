@@ -2,7 +2,7 @@
 local persist = {}
 
 
-local json = require("dkjson")
+local json_ok, json = pcall(require, "dkjson")
 
 
 
@@ -79,6 +79,12 @@ end
 
 
 
+
+
+
+
+
+
 function persist.load_json_into_table(filename)
    local fd, open_err = io.open(filename)
    if not fd then
@@ -89,12 +95,15 @@ function persist.load_json_into_table(filename)
    if not str then
       return nil, read_err, "open"
    end
+   if not json_ok then
+      return nil, json, "load"
+   end
    local manifest, _, err = json.decode(str)
    if not manifest then
       return nil, "Failed decode manifest: " .. err, "load"
    end
 
-   return manifest, {}
+   return manifest, {}, nil
 end
 
 return persist
