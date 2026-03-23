@@ -48,7 +48,6 @@ else
          "f",
       })))
       return coroutine.wrap(function()
-         local dir ---@type string
          for file in dir_process:lines() do
             coroutine.yield(file)
          end
