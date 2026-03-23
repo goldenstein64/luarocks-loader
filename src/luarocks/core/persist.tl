@@ -86,6 +86,9 @@ end
 -- "load"; compile-time error, or "run"; run-time error)
 -- in case of errors.
 function persist.load_json_into_table(filename: string) : {string: any}, {string: boolean} | string, ErrorCode
+   if not json_ok then
+      return nil, "dkjson is required to decode a JSON manifest", "load"
+   end
    local fd, open_err = io.open(filename)
    if not fd then
       return nil, open_err, "open"
@@ -94,9 +97,6 @@ function persist.load_json_into_table(filename: string) : {string: any}, {string
    fd:close()
    if not str then
       return nil, read_err, "open"
-   end
-   if not json_ok then
-      return nil, json as string, "load"
    end
    local manifest, _, err = json.decode(str)
    if not manifest then

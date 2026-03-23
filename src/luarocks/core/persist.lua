@@ -86,6 +86,9 @@ end
 
 
 function persist.load_json_into_table(filename)
+   if not json_ok then
+      return nil, "dkjson is required to decode a JSON manifest", "load"
+   end
    local fd, open_err = io.open(filename)
    if not fd then
       return nil, open_err, "open"
@@ -94,9 +97,6 @@ function persist.load_json_into_table(filename)
    fd:close()
    if not str then
       return nil, read_err, "open"
-   end
-   if not json_ok then
-      return nil, json, "load"
    end
    local manifest, _, err = json.decode(str)
    if not manifest then
